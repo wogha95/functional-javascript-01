@@ -1,0 +1,29 @@
+<script>
+  console.log('test');
+  
+  function *infinity(start = 1) {
+    while(true) yield start++;
+  }
+
+  function *limit(l, iter) {
+    for (const a of iter) {
+      yield a;
+      if (a === l) {
+        return;
+      }
+    }
+  }
+  
+  function *odds(l = 10) {
+    for (const a of limit(l, infinity())) {
+      if (a % 2 === 1) {
+        yield a;
+      }
+    }
+  }
+
+  const iterator = odds(20);
+  for (const a of iterator) {
+    console.log(a);
+  }
+</script>
