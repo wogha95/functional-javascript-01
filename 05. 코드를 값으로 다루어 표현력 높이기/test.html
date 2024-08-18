@@ -1,0 +1,138 @@
+<script>
+  const products = [
+    { name: "반팔티", price: 15000 },
+    { name: "긴팔티", price: 20000 },
+    { name: "핸드폰케이스", price: 15000 },
+    { name: "후드티", price: 30000 },
+    { name: "바지", price: 25000 },
+  ];
+
+  const add = (a, b) => a + b;
+
+  const map = (f, iter) => {
+    const result_map = [];
+    for (const a of iter) {
+      result_map.push(f(a));
+    }
+    return result_map;
+  };
+
+  const filter = (f, iter) => {
+    const result_filter = [];
+    for (const a of iter) {
+      if (f(a)) {
+        result_filter.push(a);
+      }
+    }
+    return result_filter;
+  };
+
+  const reduce = (f, total, iter) => {
+    if (!iter) {
+      iter = total[Symbol.iterator]();
+      total = iter.next().value;
+    }
+
+    for (const a of iter) {
+      total = f(total, a);
+    }
+    return total;
+  };
+</script>
+
+<script>
+  console.log("go 함수 만들기");
+  const go = (...args) => reduce((a, f) => f(a), args);
+
+  go(
+    0,
+    (a) => a + 1,
+    (a) => a + 10,
+    (a) => a + 100,
+    console.log
+  );
+</script>
+
+<script>
+  console.log("pipe 함수 만들기");
+  // 반환 함수의 인자가 숫자 1개 인 경우
+  // const pipe =
+  //   (...fs) =>
+  //   (a) =>
+  //     go(a, ...fs);
+
+  // const f = pipe(
+  //   (a) => a + 1,
+  //   (a) => a + 10,
+  //   (a) => a + 100
+  // );
+
+  // console.log(f(1));
+
+  // 반환 함수의 인자가 2개 인 경우
+  const pipe =
+    (f, ...fs) =>
+    (...args) =>
+      go(f(...args), ...fs);
+
+  const f = pipe(
+    (a, b) => a + b,
+    (a) => a + 10,
+    (a) => a + 100
+  );
+
+  console.log(f(0, 1));
+</script>
+
+<script>
+  console.log("go, pipe 함수 조합하기");
+
+  go(
+    products,
+    (_products) => filter((p) => p.price < 20000, _products),
+    (_products) => map((p) => p.price, _products),
+    (_prices) => reduce(add, _prices),
+    console.log
+  );
+</script>
+
+<script>
+  console.log("curry 함수 만들기");
+  const curry =
+    (f) =>
+    (a, ..._1) =>
+      _1.length ? f(a, ..._1) : (..._2) => f(a, ..._2);
+
+  const mult = curry((a, b) => a * b);
+  const mult3 = mult(3);
+  console.log(mult3(2));
+  console.log(mult3(10));
+  console.log(mult3(50));
+
+  const curry_map = curry(map);
+  const curry_filter = curry(filter);
+  const curry_reduce = curry(reduce);
+
+  go(
+    products,
+    curry_filter((p) => p.price < 20000),
+    curry_map((p) => p.price),
+    curry_reduce(add),
+    console.log
+  );
+</script>
+
+<script>
+  console.log("함수 조합하기");
+  const total_price = pipe(
+    curry_map((p) => p.price),
+    curry_reduce(add)
+  );
+
+  go(
+    products,
+    curry_filter((p) => p.price < 20000),
+    total_price,
+    console.log
+  );
+</script>
